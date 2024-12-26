@@ -13,9 +13,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     console.log('Access Token:', token);
 
     return token ? (
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', margin: 0, padding: 0, alignItems: 'stretch' }}>
             <Sidebar />
-            <div style={{ flex: 1, padding: '1rem' }}>{children}</div>
+            <div style={{ flex: 1, padding: 0 }}>{children}</div>
         </div>
     ) : (
         <Navigate to="/login" />
