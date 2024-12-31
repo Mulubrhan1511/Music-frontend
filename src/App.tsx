@@ -7,55 +7,90 @@ import { AddNewSong } from './pages/AddNewSong/AddNewSong';
 import Artists from './pages/Artists/Artists';
 import Albums from './pages/Albums/Albums';
 import Genres from './pages/Genres/Genres';
+import GlobalStyles from './GlobalStyles';
+import ArtistSongs from './pages/Artists/ArtistSongs';
+import AlbumSongs from './pages/Albums/AlbumSongs';
+import GenreSongs from './pages/Genres/GenreSongs';
+
+
+
 
 const App: React.FC = () => {
     return (
-        <Router>
-            <Routes>
-                {/* Protected Routes */}
-                <Route
-                    path="/"
-                    element={
+        <>
+            <GlobalStyles />
+            <Router>
+                <Routes>
+                    {/* Protected Routes */}
+                    <Route
+                        path="/"
+                        element={
+                            <ProtectedRoute>
+                                <SongList />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/add-song"
+                        element={
+                            <ProtectedRoute>
+                                <AddNewSong />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route path="/artists" element={
                         <ProtectedRoute>
-                            <SongList />
+                            <Artists />
+                        </ProtectedRoute>
+                    } />
+
+                    <Route path="/artist-songs/:artistName" element={
+                        <ProtectedRoute>
+                            <ArtistSongs />
                         </ProtectedRoute>
                     }
-                />
-                <Route
-                    path="/add-song"
+                    />
+
+                    <Route path='/albums' element={
+                        <ProtectedRoute>
+                            <Albums />
+                        </ProtectedRoute>
+                    } />
+
+                    <Route
+                    path="/albums/:albumName"
                     element={
                         <ProtectedRoute>
-                            <AddNewSong />
+                        <AlbumSongs />
                         </ProtectedRoute>
                     }
-                />
+                    />
 
-                <Route path="/artists" element={
-                    <ProtectedRoute>
-                        <Artists />
-                    </ProtectedRoute>
-                } />
 
-                <Route path='/albums' element={
-                    <ProtectedRoute>
-                        <Albums />
-                    </ProtectedRoute>
-                } />
+                    <Route path='/genres' element={
+                        <ProtectedRoute>
+                            <Genres />
+                        </ProtectedRoute>
+                    }
+                    />
 
-                <Route path='/genres' element={
-                    <ProtectedRoute>
-                        <Genres />
-                    </ProtectedRoute>
-                }
-                />
+                    <Route 
+                    path='/genres/:genreName' element= {
+                        <ProtectedRoute>
+                            <GenreSongs />
+                        </ProtectedRoute>
+                    }
+                    />
 
 
 
-                {/* Public Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-            </Routes>
-        </Router>
+                    {/* Public Routes */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                </Routes>
+            </Router>
+        </>
     );
 };
 
