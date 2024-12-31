@@ -8,6 +8,11 @@ import Artists from './pages/Artists/Artists';
 import Albums from './pages/Albums/Albums';
 import Genres from './pages/Genres/Genres';
 import GlobalStyles from './GlobalStyles';
+import ArtistSongs from './pages/Artists/ArtistSongs';
+import AlbumSongs from './pages/Albums/AlbumSongs';
+import GenreSongs from './pages/Genres/GenreSongs';
+
+
 
 
 const App: React.FC = () => {
@@ -40,15 +45,40 @@ const App: React.FC = () => {
                         </ProtectedRoute>
                     } />
 
+                    <Route path="/artist-songs/:artistName" element={
+                        <ProtectedRoute>
+                            <ArtistSongs />
+                        </ProtectedRoute>
+                    }
+                    />
+
                     <Route path='/albums' element={
                         <ProtectedRoute>
                             <Albums />
                         </ProtectedRoute>
                     } />
 
+                    <Route
+                    path="/albums/:albumName"
+                    element={
+                        <ProtectedRoute>
+                        <AlbumSongs />
+                        </ProtectedRoute>
+                    }
+                    />
+
+
                     <Route path='/genres' element={
                         <ProtectedRoute>
                             <Genres />
+                        </ProtectedRoute>
+                    }
+                    />
+
+                    <Route 
+                    path='/genres/:genreName' element= {
+                        <ProtectedRoute>
+                            <GenreSongs />
                         </ProtectedRoute>
                     }
                     />

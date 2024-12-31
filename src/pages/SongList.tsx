@@ -112,6 +112,37 @@ const LogoutButton = styled.button`
   }
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+`;
+
+const PageButton = styled.button`
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const ItemsPerPageSelect = styled.select`
+  margin-left: 1rem;
+  padding: 0.5rem;
+`;
+
 const SongList: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const songs = useSelector((state: RootState) => state.songs.songs);
@@ -120,6 +151,9 @@ const SongList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
   const [artistFilter, setArtistFilter] = useState('');
+  const [albumFilter, setAlbumFilter] = useState(''); // New state for album filter
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   useEffect(() => {
     dispatch({ type: 'songs/fetchSongs' });
@@ -146,12 +180,19 @@ const SongList: React.FC = () => {
       searchQuery ? song.title.toLowerCase().includes(searchQuery.toLowerCase()) : true
     )
     .filter((song) => (genreFilter ? song.genre === genreFilter : true))
-    .filter((song) => (artistFilter ? song.artist === artistFilter : true));
+    .filter((song) => (artistFilter ? song.artist === artistFilter : true))
+    .filter((song) => (albumFilter ? song.album === albumFilter : true)); // Added album filter
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSongs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentSongs = filteredSongs.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <Container>
       <Header>Song List</Header>
 
+      {/* Filters */}
       <FiltersContainer>
         <SearchInput
           type="text"
@@ -182,24 +223,38 @@ const SongList: React.FC = () => {
               </option>
             ))}
           </FilterSelect>
+          <FilterSelect
+            value={albumFilter}
+            onChange={(e) => setAlbumFilter(e.target.value)}
+          >
+            <option value="">All Albums</option>
+            {Array.from(new Set(songs.map((song) => song.album))).map((album) => (
+              <option key={album} value={album}>
+                {album}
+              </option>
+            ))}
+          </FilterSelect>
         </div>
       </FiltersContainer>
 
+      {/* Songs Table */}
       <Table>
         <thead>
           <tr>
             <TableHeader>Title</TableHeader>
             <TableHeader>Artist</TableHeader>
             <TableHeader>Genre</TableHeader>
+            <TableHeader>Album</TableHeader> {/* Added Album header */}
             <TableHeader>Actions</TableHeader>
           </tr>
         </thead>
         <tbody>
-          {filteredSongs.map((song) => (
+          {currentSongs.map((song) => (
             <TableRow key={song.id}>
               <TableCell>{song.title}</TableCell>
               <TableCell>{song.artist}</TableCell>
               <TableCell>{song.genre}</TableCell>
+              <TableCell>{song.album}</TableCell> {/* Added Album cell */}
               <TableCell>
                 <ActionButton className="edit" onClick={() => handleEdit(song.id)}>
                   Edit
@@ -212,6 +267,34 @@ const SongList: React.FC = () => {
           ))}
         </tbody>
       </Table>
+
+      {/* Pagination Controls */}
+      <PaginationContainer>
+        <PageButton
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className={currentPage === 1 ? 'disabled' : ''}
+        >
+          Previous
+        </PageButton>
+        <span>Page {currentPage} of {totalPages}</span>
+        <PageButton
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          className={currentPage === totalPages ? 'disabled' : ''}
+        >
+          Next
+        </PageButton>
+        <ItemsPerPageSelect
+          value={itemsPerPage}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            setCurrentPage(1); // Reset to first page when items per page changes
+          }}
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+        </ItemsPerPageSelect>
+      </PaginationContainer>
 
       <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
     </Container>
