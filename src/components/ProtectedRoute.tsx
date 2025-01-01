@@ -1,5 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store'; // Adjust based on your store setup
 import Sidebar from './SideBar';
 
 interface ProtectedRouteProps {
@@ -7,12 +9,14 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const token = localStorage.getItem('accessToken');
+  // Access the token from Redux store
+  const token = useSelector((state: RootState) => state.auth.accessToken);
 
-  // Add logging to verify the token
+  // Sidebar state management
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+
+  // Log the token for debugging purposes
   console.log('Access Token:', token);
-
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true); // You can change this logic based on your requirement
 
   return token ? (
     <div
@@ -22,19 +26,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         padding: 0,
         alignItems: 'stretch',
         position: 'relative',
-         // Ensure full height for scrollable content
       }}
     >
       {/* Sidebar with conditional styling */}
-      <Sidebar isOpen={isSidebarOpen} />
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       <div
         style={{
           flex: 1,
-          padding: '1rem', // Added padding to make the layout look better
+          padding: '1rem',
           position: 'relative',
-          zIndex: isSidebarOpen ? 1 : 0, // Ensures children are on top when sidebar is open
-          overflowY: 'auto', // Makes the children scrollable
-          height: '100vh', // Full height to allow scrolling
+          zIndex: isSidebarOpen ? 1 : 0,
+          overflowY: 'auto',
+          height: '100vh',
         }}
       >
         {children}
