@@ -1,4 +1,6 @@
 import axios from 'axios';
+import store from '../redux/store'; // Corrected import for default export
+import { clearAccessToken, setAccessToken } from '../redux/slices/authSlice'; // Import the actions
 
 const apiClient = axios.create({
     baseURL: 'http://localhost:5000/api',
@@ -6,7 +8,9 @@ const apiClient = axios.create({
 
 // Request interceptor to add the access token
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('accessToken');
+    const state = store.getState(); // Get the current state
+    const token = state.auth.accessToken;
+    console.log(state.auth.accessToken, 'accessToken') // Access token from Redux store
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,31 +26,19 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (!refreshToken) {
-                // No refresh token, log the user out
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
-                return Promise.reject(error);
-            }
-
             try {
-                // Use the refresh token to get a new access token
-                const response = await axios.post('http://localhost:5000/api/auth/refresh-token', {
-                    refreshToken,
-                });
+                // Request a new access token using the refresh token
+                const response = await axios.post('http://localhost:5000/api/auth/refresh-token', {}, { withCredentials: true });
 
                 const newAccessToken = response.data.accessToken;
-                localStorage.setItem('accessToken', newAccessToken);
+                store.dispatch(setAccessToken(newAccessToken)); // Update access token in Redux
 
                 // Retry the original request with the new access token
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return apiClient(originalRequest);
             } catch (err) {
                 // Refresh token expired, log the user out
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
+                store.dispatch(clearAccessToken()); // Clear access token in Redux
                 window.location.href = '/login';
                 return Promise.reject(err);
             }

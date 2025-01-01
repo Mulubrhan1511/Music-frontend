@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setAccessToken } from '../redux/slices/authSlice'; // Import the action
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch(); // Use dispatch to set access token
+    
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
-                email,
-                password,
-            });
-            localStorage.setItem('accessToken', response.data.accessToken);
-            localStorage.setItem('refreshToken', response.data.refreshToken);
-            navigate('/');
+            const response = await axios.post(
+                'http://localhost:5000/api/auth/login',
+                { email, password },
+                { withCredentials: true } // Include cookies in the request
+            );
+            
+            console.log(response)
+
+            // Dispatch action to set access token in Redux store
+            dispatch(setAccessToken(response.data.accessToken));
+            console.log(dispatch, 'dispatch')
+            console.log(response.data.accessToken, 'response.data.accessToken');
+            
+            // Ensure that the token is set before navigating
+            navigate('/');  // Redirect to the homepage
         } catch (err: any) {
             setError(err.response?.data?.message || 'Login failed');
         }
