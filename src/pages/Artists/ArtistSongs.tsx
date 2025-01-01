@@ -99,7 +99,7 @@ const PaginationButton = styled.button`
 const ArtistSongs = () => {
   const { artistName } = useParams<{ artistName: string }>();
   const dispatch: AppDispatch = useDispatch();
-  const musicByArtist = useSelector((state: RootState) => state.artists.musicByArtist);
+  const { musicByArtist, loading, error } = useSelector((state: RootState) => state.artists);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -142,7 +142,13 @@ const ArtistSongs = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      {currentSongs.length > 0 ? (
+      {loading && <p>Loading songs...</p>}
+      {error && <p>Error: {error}</p>}
+      
+      {
+        musicByArtist && (
+          <>
+          {currentSongs.length > 0 ? (
         <>
           <SongList>
             {currentSongs.map((song, index) => (
@@ -175,6 +181,8 @@ const ArtistSongs = () => {
       ) : (
         <NoSongsMessage>No songs match your search.</NoSongsMessage>
       )}
+          </> )
+      }
     </Container>
   );
 };

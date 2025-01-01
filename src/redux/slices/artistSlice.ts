@@ -14,11 +14,15 @@ interface Music {
 interface ArtistState {
     artists: Artist[];
     musicByArtist: Music[];
+    loading: boolean;
+    error: string | null;
 }
 
 const initialState: ArtistState = {
     artists: [],
     musicByArtist: [],
+    loading: false,
+    error: null,
 };
 
 const artistSlice = createSlice({
@@ -27,16 +31,33 @@ const artistSlice = createSlice({
     reducers: {
         setArtists(state, action: PayloadAction<Artist[]>) {
             state.artists = action.payload;
+            state.loading = false;
+            state.error = null;
         },
         setMusicByArtist(state, action: PayloadAction<Music[]>) {
             state.musicByArtist = action.payload;
+            state.loading = false;
+            state.error = null;
         },
-        // Add this action to trigger the saga
+        fetchArtistsStart(state) {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchArtistsError(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
         fetchArtistsSongs(state, action: PayloadAction<string>) {
-            // No state change here; it's just a trigger for the saga
+            state.loading = true;
+            state.error = null;
         },
     },
 });
 
-export const { setArtists, setMusicByArtist, fetchArtistsSongs } = artistSlice.actions;
+export const { 
+    setArtists, 
+    setMusicByArtist,
+    fetchArtistsError,
+    fetchArtistsStart,
+    fetchArtistsSongs } = artistSlice.actions;
 export default artistSlice.reducer;
