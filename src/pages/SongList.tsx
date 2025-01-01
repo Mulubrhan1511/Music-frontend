@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -70,88 +71,72 @@ const TableCell = styled.td`
   border: 1px solid #dee2e6;
 `;
 
-const ActionButton = styled.button`
-  margin-right: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &.edit {
-    background-color: #007bff;
-    color: white;
-
-    &:hover {
-      background-color: #0056b3;
-    }
-  }
-
-  &.delete {
-    background-color: #dc3545;
-    color: white;
-
-    &:hover {
-      background-color: #c82333;
-    }
-  }
+const ActionCell = styled.td`
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
 `;
 
-const LogoutButton = styled.button`
-  margin: 2rem auto;
-  display: block;
-  padding: 0.75rem 1.5rem;
-  background-color: #ff4d4d;
-  color: white;
+const IconButton = styled.button`
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: #343a40;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.2rem;
 
   &:hover {
-    background-color: #ff6666;
+    color: #007bff;
   }
 `;
 
-const PaginationContainer = styled.div`
+const Pagination = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 1rem 0;
+  margin-top: 1rem;
 `;
 
-const PageButton = styled.button`
-  margin: 0 0.5rem;
+const PaginationButton = styled.button`
   padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  background-color: #343a40;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: #007bff;
-  color: white;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #007bff;
   }
 
-  &.disabled {
+  &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
   }
 `;
 
-const ItemsPerPageSelect = styled.select`
-  margin-left: 1rem;
-  padding: 0.5rem;
+const LoadingIndicator = styled.div`
+  text-align: center;
+  margin-top: 1rem;
+  color: #007bff;
+  font-size: 1.2rem;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  margin-top: 1rem;
+  color: #dc3545;
+  font-size: 1.2rem;
 `;
 
 const SongList: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const songs = useSelector((state: RootState) => state.songs.songs);
+  const { songs, loading, error } = useSelector((state: RootState) => state.songs);
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState('');
   const [artistFilter, setArtistFilter] = useState('');
-  const [albumFilter, setAlbumFilter] = useState(''); // New state for album filter
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
@@ -159,20 +144,12 @@ const SongList: React.FC = () => {
     dispatch({ type: 'songs/fetchSongs' });
   }, [dispatch]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    navigate('/login');
-  };
-
   const handleEdit = (id: string) => {
-    console.log(`Editing song with id: ${id}`);
-    // Add edit logic here
+    navigate(`/edit/${id}`);
   };
 
   const handleDelete = (id: string) => {
-    console.log(`Deleting song with id: ${id}`);
-    // Add delete logic here
+    dispatch({ type: 'songs/deleteSong', payload: id });
   };
 
   const filteredSongs = songs
@@ -180,10 +157,8 @@ const SongList: React.FC = () => {
       searchQuery ? song.title.toLowerCase().includes(searchQuery.toLowerCase()) : true
     )
     .filter((song) => (genreFilter ? song.genre === genreFilter : true))
-    .filter((song) => (artistFilter ? song.artist === artistFilter : true))
-    .filter((song) => (albumFilter ? song.album === albumFilter : true)); // Added album filter
+    .filter((song) => (artistFilter ? song.artist === artistFilter : true));
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredSongs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSongs = filteredSongs.slice(startIndex, startIndex + itemsPerPage);
@@ -192,7 +167,6 @@ const SongList: React.FC = () => {
     <Container>
       <Header>Song List</Header>
 
-      {/* Filters */}
       <FiltersContainer>
         <SearchInput
           type="text"
@@ -223,80 +197,62 @@ const SongList: React.FC = () => {
               </option>
             ))}
           </FilterSelect>
-          <FilterSelect
-            value={albumFilter}
-            onChange={(e) => setAlbumFilter(e.target.value)}
-          >
-            <option value="">All Albums</option>
-            {Array.from(new Set(songs.map((song) => song.album))).map((album) => (
-              <option key={album} value={album}>
-                {album}
-              </option>
-            ))}
-          </FilterSelect>
         </div>
       </FiltersContainer>
 
-      {/* Songs Table */}
-      <Table>
-        <thead>
-          <tr>
-            <TableHeader>Title</TableHeader>
-            <TableHeader>Artist</TableHeader>
-            <TableHeader>Genre</TableHeader>
-            <TableHeader>Album</TableHeader> {/* Added Album header */}
-            <TableHeader>Actions</TableHeader>
-          </tr>
-        </thead>
-        <tbody>
-          {currentSongs.map((song) => (
-            <TableRow key={song.id}>
-              <TableCell>{song.title}</TableCell>
-              <TableCell>{song.artist}</TableCell>
-              <TableCell>{song.genre}</TableCell>
-              <TableCell>{song.album}</TableCell> {/* Added Album cell */}
-              <TableCell>
-                <ActionButton className="edit" onClick={() => handleEdit(song.id)}>
-                  Edit
-                </ActionButton>
-                <ActionButton className="delete" onClick={() => handleDelete(song.id)}>
-                  Delete
-                </ActionButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </tbody>
-      </Table>
+      {loading ? (
+        <LoadingIndicator>Loading songs...</LoadingIndicator>
+      ) : error ? (
+        <ErrorMessage>{error}</ErrorMessage>
+      ) : (
+        <>
+          <Table>
+            <thead>
+              <tr>
+                <TableHeader>Title</TableHeader>
+                <TableHeader>Artist</TableHeader>
+                <TableHeader>Genre</TableHeader>
+                <TableHeader>Actions</TableHeader>
+              </tr>
+            </thead>
+            <tbody>
+              {currentSongs.map((song) => (
+                <TableRow key={song.id}>
+                  <TableCell>{song.title}</TableCell>
+                  <TableCell>{song.artist}</TableCell>
+                  <TableCell>{song.genre}</TableCell>
+                  <ActionCell>
+                    <IconButton onClick={() => handleEdit(song.id)}>
+                      <FaEdit />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(song.id)}>
+                      <FaTrash />
+                    </IconButton>
+                  </ActionCell>
+                </TableRow>
+              ))}
+            </tbody>
+          </Table>
 
-      {/* Pagination Controls */}
-      <PaginationContainer>
-        <PageButton
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          className={currentPage === 1 ? 'disabled' : ''}
-        >
-          Previous
-        </PageButton>
-        <span>Page {currentPage} of {totalPages}</span>
-        <PageButton
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          className={currentPage === totalPages ? 'disabled' : ''}
-        >
-          Next
-        </PageButton>
-        <ItemsPerPageSelect
-          value={itemsPerPage}
-          onChange={(e) => {
-            setItemsPerPage(Number(e.target.value));
-            setCurrentPage(1); // Reset to first page when items per page changes
-          }}
-        >
-          <option value={5}>5 per page</option>
-          <option value={10}>10 per page</option>
-          <option value={20}>20 per page</option>
-        </ItemsPerPageSelect>
-      </PaginationContainer>
-
-      <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
+          <Pagination>
+            <PaginationButton
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+            >
+              Previous
+            </PaginationButton>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <PaginationButton
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+            >
+              Next
+            </PaginationButton>
+          </Pagination>
+        </>
+      )}
     </Container>
   );
 };

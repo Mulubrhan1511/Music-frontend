@@ -4,16 +4,19 @@ interface Song {
     id: string;
     title: string;
     artist: string;
-    album: string;
     genre: string;
 }
 
 interface SongsState {
     songs: Song[];
+    loading: boolean;
+    error: string | null;
 }
 
 const initialState: SongsState = {
     songs: [],
+    loading: false,
+    error: null,
 };
 
 const songSlice = createSlice({
@@ -22,6 +25,8 @@ const songSlice = createSlice({
     reducers: {
         setSongs(state, action: PayloadAction<Song[]>) {
             state.songs = action.payload;
+            state.loading = false;
+            state.error = null;
         },
         addSong(state, action: PayloadAction<Song>) {
             state.songs.push(action.payload);
@@ -35,8 +40,24 @@ const songSlice = createSlice({
         deleteSong(state, action: PayloadAction<string>) {
             state.songs = state.songs.filter((song) => song.id !== action.payload);
         },
+        fetchSongsStart(state) {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchSongsError(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
-export const { setSongs, addSong, updateSong, deleteSong } = songSlice.actions;
+export const {
+    setSongs,
+    addSong,
+    updateSong,
+    deleteSong,
+    fetchSongsStart,
+    fetchSongsError,
+} = songSlice.actions;
+
 export default songSlice.reducer;
