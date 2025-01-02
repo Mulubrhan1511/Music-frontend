@@ -20,7 +20,7 @@ function* addSong(action: ReturnType<typeof addSongAction>): Generator<any, void
         const response = yield call(apiClient.post, '/songs', action.payload);
         console.log('Song added:', response.data);
         // Optionally dispatch an action to update the state or fetch songs again
-        yield put(setSongs([...response.data])); // or another action to update state
+        
     } catch (error: any) {
         console.error('Failed to add song:', error.message);
     }
