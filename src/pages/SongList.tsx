@@ -1,9 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../redux/store';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { AppDispatch, RootState } from '../redux/store';
+import { addSong } from '../redux/slices/songSlice';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+
+// Styled components
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContainer = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ModalHeader = styled.h2`
+  margin-bottom: 1rem;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  &:hover {
+    color: #dc3545;
+  }
+`;
+
+const Input = styled.input`
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const SubmitButton = styled.button`
+  background: #343a40;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: #007bff;
+  }
+`;
 
 const Container = styled.div`
   max-width: 1200px;
@@ -14,32 +83,30 @@ const Container = styled.div`
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
-const Header = styled.h1`
-  text-align: center;
-  color: #343a40;
-`;
-
-const FiltersContainer = styled.div`
+const HeaderContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 `;
 
-const SearchInput = styled.input`
-  padding: 0.5rem;
+const AddButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 4px;
-  border: 1px solid #ccc;
-  width: 300px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
-const FilterSelect = styled.select`
-  padding: 0.5rem;
-  font-size: 1rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  margin-left: 1rem;
+const Header = styled.h1`
+  margin: 0;
+  color: #343a40;
 `;
 
 const Table = styled.table`
@@ -89,24 +156,36 @@ const IconButton = styled.button`
   }
 `;
 
-const Pagination = styled.div`
+const SearchContainer = styled.div`
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+`;
+
+const SearchInput = styled.input`
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+`;
+
+const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
   margin-top: 1rem;
 `;
 
 const PaginationButton = styled.button`
+  margin: 0 0.5rem;
   padding: 0.5rem 1rem;
-  margin: 0 0.25rem;
-  background-color: #343a40;
+  cursor: pointer;
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
 
   &:hover {
-    background-color: #007bff;
+    background-color: #0056b3;
   }
 
   &:disabled {
@@ -115,30 +194,82 @@ const PaginationButton = styled.button`
   }
 `;
 
-const LoadingIndicator = styled.div`
-  text-align: center;
-  margin-top: 1rem;
-  color: #007bff;
-  font-size: 1.2rem;
-`;
+const AddSongModal = ({ onClose }: { onClose: () => void }) => {
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
+  const [genre, setGenre] = useState('');
+  const [album, setAlbum] = useState('');
+  const dispatch: AppDispatch = useDispatch();
 
-const ErrorMessage = styled.div`
-  text-align: center;
-  margin-top: 1rem;
-  color: #dc3545;
-  font-size: 1.2rem;
-`;
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    dispatch(addSong({ 
+      title,
+      artist,
+      genre,
+      album,
+    }));
+    onClose();
+  };
+
+  return (
+    <Overlay>
+      <ModalContainer>
+        <CloseButton onClick={onClose}>×</CloseButton>
+        <ModalHeader>Add New Song</ModalHeader>
+        <form onSubmit={handleSubmit}>
+          <Input
+            type="text"
+            name="title"
+            placeholder="Song Title"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Input
+            type="text"
+            name="artist"
+            placeholder="Artist"
+            required
+            value={artist}
+            onChange={(e) => setArtist(e.target.value)}
+          />
+          <Input
+            type="text"
+            name="genre"
+            placeholder="Genre"
+            required
+            value={genre}
+            onChange={(e) => setGenre(e.target.value)}
+          />
+          <Input
+            type="text"
+            name="album"
+            placeholder="Album"
+            required
+            value={album}
+            onChange={(e) => setAlbum(e.target.value)}
+          />
+          <SubmitButton type="submit">Add Song</SubmitButton>
+        </form>
+      </ModalContainer>
+    </Overlay>
+  );
+};
 
 const SongList: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { songs, loading, error } = useSelector((state: RootState) => state.songs);
   const navigate = useNavigate();
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [genreFilter, setGenreFilter] = useState('');
-  const [artistFilter, setArtistFilter] = useState('');
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  
+  // State for search filters and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAlbum, setFilterAlbum] = useState('');
+  const [filterGenre, setFilterGenre] = useState('');
+  const [filterArtist, setFilterArtist] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Change to 10, 20, or 5 as needed
 
   useEffect(() => {
     dispatch({ type: 'songs/fetchSongs' });
@@ -152,107 +283,159 @@ const SongList: React.FC = () => {
     dispatch({ type: 'songs/deleteSong', payload: id });
   };
 
+  // Filtering and sorting logic
   const filteredSongs = songs
-    .filter((song) =>
-      searchQuery ? song.title.toLowerCase().includes(searchQuery.toLowerCase()) : true
-    )
-    .filter((song) => (genreFilter ? song.genre === genreFilter : true))
-    .filter((song) => (artistFilter ? song.artist === artistFilter : true));
+    .filter((song) => {
+      return (
+        (filterAlbum ? song.album.toLowerCase().includes(filterAlbum.toLowerCase()) : true) &&
+        (filterGenre ? song.genre.toLowerCase().includes(filterGenre.toLowerCase()) : true) &&
+        (filterArtist ? song.artist.toLowerCase().includes(filterArtist.toLowerCase()) : true) &&
+        (searchTerm ? song.title.toLowerCase().includes(searchTerm.toLowerCase()) : true)
+      );
+    })
+    .sort((a, b) => {
+      // Sort by createdAt if available, otherwise by title
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA || a.title.localeCompare(b.title);
+    });
 
+  // Pagination logic
   const totalPages = Math.ceil(filteredSongs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSongs = filteredSongs.slice(startIndex, startIndex + itemsPerPage);
+  const renderPagination = () => {
+    const pageNumbers = [];
+    
+    // Show first page
+    if (currentPage > 1) {
+      pageNumbers.push(1);
+    }
+    
+    // Show ellipsis if needed
+    if (currentPage > 3) {
+      pageNumbers.push('...');
+    }
+    
+    // Show pages around the current page
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pageNumbers.push(i);
+    }
+    
+    // Show last page
+    if (currentPage < totalPages - 1) {
+      pageNumbers.push(totalPages);
+    }
+    
+    return (
+      <>
+        {pageNumbers.map((number, index) => (
+          <PaginationButton
+            key={index}
+            onClick={() => {
+              if (typeof number === 'number') {
+                setCurrentPage(number);
+              }
+            }}
+            disabled={number === '...' || currentPage === number}
+          >
+            {number}
+          </PaginationButton>
+        ))}
+      </>
+    );
+  };
+  
+  
 
   return (
     <Container>
-      <Header>Song List</Header>
-
-      <FiltersContainer>
+      <HeaderContainer>
+        <Header>Song List</Header>
+        <AddButton onClick={() => setIsAddOpen(true)}>Add Song</AddButton>
+      </HeaderContainer>
+      {isAddOpen && <AddSongModal onClose={() => setIsAddOpen(false)} />}
+      
+      <SearchContainer>
         <SearchInput
           type="text"
-          placeholder="Search by title..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by Title"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <div>
-          <FilterSelect
-            value={genreFilter}
-            onChange={(e) => setGenreFilter(e.target.value)}
-          >
-            <option value="">All Genres</option>
-            {Array.from(new Set(songs.map((song) => song.genre))).map((genre) => (
-              <option key={genre} value={genre}>
-                {genre}
-              </option>
-            ))}
-          </FilterSelect>
-          <FilterSelect
-            value={artistFilter}
-            onChange={(e) => setArtistFilter(e.target.value)}
-          >
-            <option value="">All Artists</option>
-            {Array.from(new Set(songs.map((song) => song.artist))).map((artist) => (
-              <option key={artist} value={artist}>
-                {artist}
-              </option>
-            ))}
-          </FilterSelect>
-        </div>
-      </FiltersContainer>
+        <SearchInput
+          type="text"
+          placeholder="Filter by Album"
+          value={filterAlbum}
+          onChange={(e) => setFilterAlbum(e.target.value)}
+        />
+        <SearchInput
+          type="text"
+          placeholder="Filter by Genre"
+          value={filterGenre}
+          onChange={(e) => setFilterGenre(e.target.value)}
+        />
+        <SearchInput
+          type="text"
+          placeholder="Filter by Artist"
+          value={filterArtist}
+          onChange={(e) => setFilterArtist(e.target.value)}
+        />
+      </SearchContainer>
 
       {loading ? (
-        <LoadingIndicator>Loading songs...</LoadingIndicator>
+        <div>Loading...</div>
       ) : error ? (
-        <ErrorMessage>{error}</ErrorMessage>
+        <div>{error}</div>
       ) : (
-        <>
-          <Table>
-            <thead>
-              <tr>
-                <TableHeader>Title</TableHeader>
-                <TableHeader>Artist</TableHeader>
-                <TableHeader>Genre</TableHeader>
-                <TableHeader>Actions</TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {currentSongs.map((song) => (
-                <TableRow key={song.id}>
-                  <TableCell>{song.title}</TableCell>
-                  <TableCell>{song.artist}</TableCell>
-                  <TableCell>{song.genre}</TableCell>
-                  <ActionCell>
-                    <IconButton onClick={() => handleEdit(song.id)}>
-                      <FaEdit />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(song.id)}>
-                      <FaTrash />
-                    </IconButton>
-                  </ActionCell>
-                </TableRow>
-              ))}
-            </tbody>
-          </Table>
-
-          <Pagination>
-            <PaginationButton
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => prev - 1)}
-            >
-              Previous
-            </PaginationButton>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <PaginationButton
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-            >
-              Next
-            </PaginationButton>
-          </Pagination>
-        </>
+        <Table>
+          <thead>
+            <tr>
+              <TableHeader>Title</TableHeader>
+              <TableHeader>Artist</TableHeader>
+              <TableHeader>Genre</TableHeader>
+              <TableHeader>Album</TableHeader>
+              <TableHeader>Actions</TableHeader>
+            </tr>
+          </thead>
+          <tbody>
+            {currentSongs.map((song) => (
+              <TableRow key={song.id}>
+                <TableCell>{song.title}</TableCell>
+                <TableCell>{song.artist}</TableCell>
+                <TableCell>{song.genre}</TableCell>
+                <TableCell>{song.album}</TableCell>
+                <ActionCell>
+                  <IconButton onClick={() => handleEdit(song?.id || '')}>
+                    <FaEdit />
+                  </IconButton>
+                  <IconButton onClick={() => handleDelete(song?.id || '')}>
+                    <FaTrash />
+                  </IconButton>
+                </ActionCell>
+              </TableRow>
+            ))}
+          </tbody>
+        </Table>
       )}
+
+<PaginationContainer>
+        <PaginationButton 
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} 
+          disabled={currentPage === 1}
+        >
+          Previous
+        </PaginationButton>
+        
+        {renderPagination()}
+
+        <PaginationButton 
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} 
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </PaginationButton>
+      </PaginationContainer>
     </Container>
   );
 };

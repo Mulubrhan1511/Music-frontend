@@ -65,7 +65,7 @@ const GenreIcon = styled.div`
 
 const Genres = () => {
   const dispatch: AppDispatch = useDispatch();
-  const allgenres = useSelector((state: RootState) => state.genres.genres);
+  const {genres, loading, error} = useSelector((state: RootState) => state.genres);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,8 +93,13 @@ const Genres = () => {
   return (
     <Container>
       <Header>Genres</Header>
-      <GenreList>
-        {allgenres.map((genre) => (
+      {loading && <p>Loading genres...</p>}
+      {error && <p>Error: {error}</p>}
+      {
+        genres && (
+          <>
+          <GenreList>
+        {genres.map((genre) => (
           <GenreItem 
           key={genre.genre}
           
@@ -104,6 +109,9 @@ const Genres = () => {
           </GenreItem>
         ))}
       </GenreList>
+          </>
+        )
+      }
     </Container>
   );
 };
