@@ -1,35 +1,61 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { setSongs, fetchSongsStart, fetchSongsError, addSong as addSongAction } from '../slices/songSlice';
-import axios from 'axios';
+import { 
+  setSongs, 
+  fetchSongsStart, 
+  fetchSongsError, 
+  addSong as addSongAction, 
+  updateSong as updateSongAction 
+} from '../slices/songSlice';
 import apiClient from '../../services/apiClient';
 
 // Worker saga: fetch songs
 function* fetchSongs(): Generator<any, void, any> {
-    try {
-        yield put(fetchSongsStart());
-        const response = yield call(apiClient.get, '/songs');
-        yield put(setSongs(response.data));
-    } catch (error: any) {
-        yield put(fetchSongsError(error.message || 'Failed to fetch songs'));
-    }
+  try {
+    yield put(fetchSongsStart());
+    const response = yield call(apiClient.get, '/songs');
+    yield put(setSongs(response.data));
+  } catch (error: any) {
+    yield put(fetchSongsError(error.message || 'Failed to fetch songs'));
+  }
 }
 
 // Worker saga: add song
 function* addSong(action: ReturnType<typeof addSongAction>): Generator<any, void, any> {
-    try {
-        const response = yield call(apiClient.post, '/songs', action.payload);
-        console.log('Song added:', response.data);
-        // Optionally dispatch an action to update the state or fetch songs again
-        
-    } catch (error: any) {
-        console.error('Failed to add song:', error.message);
-    }
+  try {
+    yield call(apiClient.post, '/songs', action.payload);
+    yield call(fetchSongs); // Fetch songs again to update the list
+  } catch (error: any) {
+    console.error('Failed to add song:', error.message);
+  }
 }
+
+// Worker saga: update song
+function* updateSong(action: ReturnType<typeof updateSongAction>): Generator<any, void, any> {
+    try {
+      console.log('Updating song:', action.payload);
+  
+      // Extract only the required fields
+      const { title, artist, genre, album } = action.payload;
+        
+      // Create a new object with the selected fields
+      const updatedData = { title, artist, genre, album };
+  
+      // Send the extracted data to the API
+      yield call(apiClient.put, `/songs/${action.payload._id}`, updatedData);
+  
+      // Fetch songs again to refresh the list
+      yield call(fetchSongs);
+    } catch (error: any) {
+      console.error('Failed to update song:', error.message);
+    }
+  }
+  
 
 // Watcher saga
 export function* watchSongs() {
-    yield takeLatest('songs/fetchSongs', fetchSongs);
-    yield takeLatest(addSongAction.type, addSong); // Use addSong action from slice
+  yield takeLatest('songs/fetchSongs', fetchSongs);
+  yield takeLatest(addSongAction.type, addSong);
+  yield takeLatest(updateSongAction.type, updateSong);
 }
 
 export default watchSongs;

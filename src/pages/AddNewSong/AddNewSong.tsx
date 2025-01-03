@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../redux/store';
-import { addSong } from '../../redux/slices/songSlice';
+import { addSong, updateSongAction } from '../../redux/slices/songSlice';
 
 const Overlay = styled.div`
   position: fixed;
@@ -84,7 +84,8 @@ const AddSongModal = () => {
   
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(addSong({ title, artist, genre, album })); // Use action creator
+    dispatch(addSong({ title, artist, genre, album, })); // Use action creator
+    dispatch(updateSongAction({ title, artist, genre, album })); // Use action creator
 }
 
   
