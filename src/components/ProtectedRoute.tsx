@@ -12,11 +12,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Access the token from Redux store
   const token = useSelector((state: RootState) => state.auth.accessToken);
 
-  // Sidebar state management
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
-
-  // Log the token for debugging purposes
-  console.log('Access Token:', token);
 
   return token ? (
     <div
@@ -35,7 +30,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           flex: 1,
           padding: '1rem',
           position: 'relative',
-          zIndex: isSidebarOpen ? 1 : 0,
+          
           overflowY: 'auto',
           height: '100vh',
         }}

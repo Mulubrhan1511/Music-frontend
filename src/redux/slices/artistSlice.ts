@@ -47,7 +47,7 @@ const artistSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
-        fetchArtistsSongs(state, action: PayloadAction<string>) {
+        fetchArtistsSongs(state, _action: PayloadAction<string>) {
             state.loading = true;
             state.error = null;
         },

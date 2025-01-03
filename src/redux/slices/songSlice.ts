@@ -33,7 +33,7 @@ const songSlice = createSlice({
     addSong(state, action: PayloadAction<Song>) {
       state.songs.push(action.payload);
     },
-    updateSong(state, action: PayloadAction<Song>) {
+    updateSong(state, action: PayloadAction<any>) {
       const index = state.songs.findIndex((song) => song._id === action.payload._id);
       if (index >= 0) {
         state.songs[index] = { ...state.songs[index], ...action.payload };

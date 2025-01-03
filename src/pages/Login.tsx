@@ -21,12 +21,11 @@ const Login: React.FC = () => {
                 { withCredentials: true } // Include cookies in the request
             );
             
-            console.log(response)
+            
 
             // Dispatch action to set access token in Redux store
             dispatch(setAccessToken(response.data.accessToken));
-            console.log(dispatch, 'dispatch')
-            console.log(response.data.accessToken, 'response.data.accessToken');
+            
             
             // Ensure that the token is set before navigating
             navigate('/');  // Redirect to the homepage

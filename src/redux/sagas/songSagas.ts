@@ -26,14 +26,14 @@ function* addSong(action: ReturnType<typeof addSongAction>): Generator<any, void
     yield call(apiClient.post, '/songs', action.payload);
     yield call(fetchSongs); // Fetch songs again to update the list
   } catch (error: any) {
-    console.error('Failed to add song:', error.message);
+   
   }
 }
 
 // Worker saga: update song
 function* updateSong(action: ReturnType<typeof updateSongAction>): Generator<any, void, any> {
     try {
-      console.log('Updating song:', action.payload);
+      
   
       // Extract only the required fields
       const { title, artist, genre, album } = action.payload;
@@ -47,7 +47,7 @@ function* updateSong(action: ReturnType<typeof updateSongAction>): Generator<any
       // Fetch songs again to refresh the list
       yield call(fetchSongs);
     } catch (error: any) {
-      console.error('Failed to update song:', error.message);
+      
     }
   }
 
@@ -56,7 +56,7 @@ function* deleteSong(action: ReturnType<typeof deleteSongAction>): Generator<any
     yield call(apiClient.delete, `/songs/${action.payload}`);
     yield call(fetchSongs); // Fetch songs again to update the list
   } catch (error: any) {
-    console.error('Failed to delete song:', error.message);
+    
   }
 } 
 

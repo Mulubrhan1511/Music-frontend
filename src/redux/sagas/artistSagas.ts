@@ -1,6 +1,6 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import apiClient from "../../services/apiClient";
-import { setArtists, setMusicByArtist, fetchArtistsSongs, fetchArtistsStart } from "../slices/artistSlice";
+import { setArtists, setMusicByArtist,  fetchArtistsStart } from "../slices/artistSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
 
 function* fetchArtists(): Generator<any, void, any> {
@@ -10,7 +10,7 @@ function* fetchArtists(): Generator<any, void, any> {
       const artists = response.data;
       yield put(setArtists(artists));
    } catch (error) {
-      console.error('Error fetching artists:', error);
+      
    }
 }
 
@@ -22,10 +22,10 @@ function* fetchArtistsSongsSaga(action: PayloadAction<string>): Generator<any, v
       if (response.data && Array.isArray(response.data)) {
          yield put(setMusicByArtist(response.data));
       } else {
-         console.error('Unexpected response structure:', response.data);
+         
       }
    } catch (error) {
-      console.error('Error fetching songs by artist:', error);
+      
    }
 }
 
