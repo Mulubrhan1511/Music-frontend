@@ -48,7 +48,8 @@ const albumSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
-        fetchAlbumsSongs(state) {
+        fetchAlbumsSongs(state, _action: PayloadAction<string>) {
+
             state.loading = true;
             state.error = null;
         },

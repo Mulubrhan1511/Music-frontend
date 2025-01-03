@@ -92,7 +92,7 @@ const GenreSongs = () => {
 
   useEffect(() => {
     if (genreName) {
-      dispatch(fetchGenresSongs());
+      dispatch(fetchGenresSongs(genreName));
     }
   }, [dispatch, genreName]);
 
