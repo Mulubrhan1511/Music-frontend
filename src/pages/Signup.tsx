@@ -12,7 +12,7 @@ const Signup: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/register', {
+            await axios.post('https://music-backend-1z2z.onrender.com/api/auth/register', {
                 name,
                 email,
                 password,

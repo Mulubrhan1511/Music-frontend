@@ -3,7 +3,7 @@ import store from '../redux/store'; // Corrected import for default export
 import { clearAccessToken, setAccessToken } from '../redux/slices/authSlice'; // Import the actions
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'https://music-backend-1z2z.onrender.com/api',
 });
 
 // Request interceptor to add the access token
@@ -28,7 +28,7 @@ apiClient.interceptors.response.use(
 
             try {
                 // Request a new access token using the refresh token
-                const response = await axios.post('http://localhost:5000/api/auth/refresh-token', {}, { withCredentials: true });
+                const response = await axios.post('https://music-backend-1z2z.onrender.com/api/auth/refresh-token', {}, { withCredentials: true });
 
                 const newAccessToken = response.data.accessToken;
                 store.dispatch(setAccessToken(newAccessToken)); // Update access token in Redux
