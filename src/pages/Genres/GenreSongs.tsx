@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux/store';
@@ -88,11 +88,11 @@ const GenreSongs = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(5);
 
   useEffect(() => {
     if (genreName) {
-      dispatch(fetchGenresSongs(genreName));
+      dispatch(fetchGenresSongs());
     }
   }, [dispatch, genreName]);
 
@@ -106,8 +106,7 @@ const GenreSongs = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSongs = filteredSongs.slice(startIndex, startIndex + itemsPerPage);
 
-  console.log('Filtered Songs:', filteredSongs); // Debugging line
-  console.log('Current Songs:', currentSongs); // Debugging line
+  
 
   return (
     <Container>

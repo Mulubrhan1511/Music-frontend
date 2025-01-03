@@ -10,7 +10,7 @@ function* fetchAlbums(): Generator<any, void, any> {
         const albums = response.data;
         yield put(setAlbums(albums));
     } catch (error: any) {
-        console.error('Error fetching albums:', error);
+        
         yield put(fetchAlbumsError(error.message || 'Failed to fetch albums'));
     }
 }
@@ -23,10 +23,10 @@ function* fetchAlbumsSongsSaga(action: PayloadAction<string>): Generator<any, vo
         if (response.data && Array.isArray(response.data)) {
             yield put(setMusicIntheAlbum(response.data));
         } else {
-            console.error('Unexpected response structure:', response.data);
+            
         }
     } catch (error: any) {
-        console.error('Error fetching songs by album:', error);
+        
         yield put(fetchAlbumsError(error.message || 'Failed to fetch songs'));
     }
 }

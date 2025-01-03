@@ -52,7 +52,8 @@ const genresSlice = createSlice({
             state.error = action.payload;
         },
 
-        fetchGenresSongs(state, action: PayloadAction<string>) {
+        fetchGenresSongs(state, ) {
+            
             state.loading = true;
             state.error = null;
         },

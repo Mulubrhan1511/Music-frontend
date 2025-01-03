@@ -10,7 +10,6 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
     const state = store.getState(); // Get the current state
     const token = state.auth.accessToken;
-    console.log(state.auth.accessToken, 'accessToken') // Access token from Redux store
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
