@@ -11,25 +11,32 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch(); // Use dispatch to set access token
     
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const response = await axios.post(
                 'https://music-backend-1z2z.onrender.com/api/auth/login',
                 { email, password },
-                { withCredentials: true } // Include cookies in the request
+                {
+                    withCredentials: true, // Ensure credentials (cookies) are included in the request
+                    headers: {
+                        'Content-Type': 'application/json', // Ensure the content type is set
+                    },
+                }
             );
-            
-            
 
-            // Dispatch action to set access token in Redux store
-            dispatch(setAccessToken(response.data.accessToken));
-            
-            
-            // Ensure that the token is set before navigating
-            navigate('/');  // Redirect to the homepage
+            // Check if the response contains the access token
+            if (response.data && response.data.accessToken) {
+                // Dispatch action to set access token in Redux store
+                dispatch(setAccessToken(response.data.accessToken));
+
+                // Redirect to the homepage or dashboard after successful login
+                navigate('/');
+            } else {
+                setError('Authentication failed. No token received.');
+            }
         } catch (err: any) {
+            // Check if error response exists and handle it
             setError(err.response?.data?.message || 'Login failed');
         }
     };
