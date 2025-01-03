@@ -4,7 +4,8 @@ import {
   fetchSongsStart, 
   fetchSongsError, 
   addSong as addSongAction, 
-  updateSong as updateSongAction 
+  updateSong as updateSongAction,
+deleteSong as deleteSongAction
 } from '../slices/songSlice';
 import apiClient from '../../services/apiClient';
 
@@ -49,13 +50,22 @@ function* updateSong(action: ReturnType<typeof updateSongAction>): Generator<any
       console.error('Failed to update song:', error.message);
     }
   }
-  
+
+function* deleteSong(action: ReturnType<typeof deleteSongAction>): Generator<any, void, any> {
+  try {
+    yield call(apiClient.delete, `/songs/${action.payload}`);
+    yield call(fetchSongs); // Fetch songs again to update the list
+  } catch (error: any) {
+    console.error('Failed to delete song:', error.message);
+  }
+} 
 
 // Watcher saga
 export function* watchSongs() {
   yield takeLatest('songs/fetchSongs', fetchSongs);
   yield takeLatest(addSongAction.type, addSong);
   yield takeLatest(updateSongAction.type, updateSong);
+  yield takeLatest(deleteSongAction.type, deleteSong);
 }
 
 export default watchSongs;
