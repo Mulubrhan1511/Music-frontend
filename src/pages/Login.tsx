@@ -16,7 +16,7 @@ const Login: React.FC = () => {
         e.preventDefault();
         try {
             const response = await axios.post(
-                'http://localhost:5000/api/auth/login',
+                'https://music-backend-1z2z.onrender.com/api/auth/login',
                 { email, password },
                 { withCredentials: true } // Include cookies in the request
             );
