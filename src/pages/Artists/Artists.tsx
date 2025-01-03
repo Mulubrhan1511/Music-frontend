@@ -92,14 +92,14 @@ const PageButton = styled.button<{ active?: boolean }>`
 
 const Artists = () => {
   const dispatch: AppDispatch = useDispatch();
-  const allArtists = useSelector((state: RootState) => state.artists.artists);
+  const { artists, loading, error } = useSelector((state: RootState) => state.artists);
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const filteredArtists = allArtists.filter((artist) =>
+  const filteredArtists = artists.filter((artist) =>
     artist.artist.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const totalPages = Math.ceil(filteredArtists.length / itemsPerPage);
@@ -121,6 +121,8 @@ const Artists = () => {
     navigate(`/artist-songs/${artistName}`);
   };
 
+  
+
   return (
     <Container>
       <Title>Artists</Title>
@@ -130,7 +132,16 @@ const Artists = () => {
         value={searchTerm}
         onChange={handleSearch}
       />
-      <ArtistList>
+      {loading && <p>Loading...</p>}
+      {error && <p>Error fetching artists</p>}
+      {
+        artists.length === 0 && !loading && !error && <p>No artists found</p>
+      }
+
+      {
+        artists.length > 0 && (
+          <>
+          <ArtistList>
         {displayedArtists.map((artist) => (
           <ArtistCard
             key={artist.artist}
@@ -152,6 +163,9 @@ const Artists = () => {
           </PageButton>
         ))}
       </Pagination>
+          </>
+        )
+      }
     </Container>
   );
 };

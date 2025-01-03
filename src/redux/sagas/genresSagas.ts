@@ -1,9 +1,10 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import apiClient from "../../services/apiClient";
-import { fetchGenresSongs, setGenres, setMusicByGenre } from "../slices/genresSlice";
+import { fetchGenresSongs, fetchGenresStart, setGenres, setMusicByGenre } from "../slices/genresSlice";
 
 function* fetchGenres(): Generator<any, void, any> {
   try {
+    yield put(fetchGenresStart());
     const response = yield call(apiClient.get, '/genres');
     const genres = response.data;
     yield put(setGenres(genres));
@@ -14,9 +15,9 @@ function* fetchGenres(): Generator<any, void, any> {
 
 function* fetchGenresSongsSaga(action: any): Generator<any, void, any> {
   try {
+    yield put(fetchGenresStart());
     const genre = action.payload;
     const response = yield call(apiClient.get, `/genres/${genre}`);
-    
     if (response.data && Array.isArray(response.data)) {
       yield put(setMusicByGenre(response.data));
     } else {
@@ -28,6 +29,6 @@ function* fetchGenresSongsSaga(action: any): Generator<any, void, any> {
 }
 
 export default function* genresSagas() {
-    yield takeLatest('genres/fetchGenres', fetchGenres);
-    yield takeLatest(fetchGenresSongs.type, fetchGenresSongsSaga);
+  yield takeLatest('genres/fetchGenres', fetchGenres);
+  yield takeLatest('genres/fetchGenresSongs', fetchGenresSongsSaga);
 }

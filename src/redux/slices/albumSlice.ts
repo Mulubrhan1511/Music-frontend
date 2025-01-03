@@ -1,5 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface Album {
     album: string;
@@ -13,15 +12,18 @@ interface Music {
     genre: string;
 }
 
-
 interface AlbumsState {
     albums: Album[];
     musicIntheAlbum: Music[];
+    loading: boolean;
+    error: string | null;
 }
 
 const initialState: AlbumsState = {
     albums: [],
     musicIntheAlbum: [],
+    loading: false,
+    error: null,
 };
 
 const albumSlice = createSlice({
@@ -30,17 +32,34 @@ const albumSlice = createSlice({
     reducers: {
         setAlbums(state, action: PayloadAction<Album[]>) {
             state.albums = action.payload;
+            state.loading = false;
+            state.error = null;
         },
-
         setMusicIntheAlbum(state, action: PayloadAction<Music[]>) {
-            state.musicIntheAlbum = action.payload; // Correctly updates `musicIntheAlbum`
-        },        
-
+            state.musicIntheAlbum = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAlbumsStart(state) {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchAlbumsError(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
         fetchAlbumsSongs(state, action: PayloadAction<string>) {
-            // No state change here; it's just a trigger for the saga
-        }
+            state.loading = true;
+            state.error = null;
+        },
     },
 });
 
-export const { setAlbums, setMusicIntheAlbum, fetchAlbumsSongs } = albumSlice.actions;
+export const { 
+    setAlbums, 
+    setMusicIntheAlbum, 
+    fetchAlbumsStart, 
+    fetchAlbumsError, 
+    fetchAlbumsSongs 
+} = albumSlice.actions;
 export default albumSlice.reducer;

@@ -3,7 +3,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SongList from './pages/SongList';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import { AddNewSong } from './pages/AddNewSong/AddNewSong';
+
 import Artists from './pages/Artists/Artists';
 import Albums from './pages/Albums/Albums';
 import Genres from './pages/Genres/Genres';
@@ -30,14 +30,7 @@ const App: React.FC = () => {
                             </ProtectedRoute>
                         }
                     />
-                    <Route
-                        path="/add-song"
-                        element={
-                            <ProtectedRoute>
-                                <AddNewSong />
-                            </ProtectedRoute>
-                        }
-                    />
+                    
 
                     <Route path="/artists" element={
                         <ProtectedRoute>

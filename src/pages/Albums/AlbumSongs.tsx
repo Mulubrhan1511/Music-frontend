@@ -1,108 +1,92 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+/** @jsxImportSource @emotion/react */
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import styled from '@emotion/styled';
 import { AppDispatch, RootState } from '../../redux/store';
 import { fetchAlbumsSongs } from '../../redux/slices/albumSlice';
+import styled from '@emotion/styled';
 
-// Styled Components
-const Container = styled.div`
+const PageContainer = styled.div`
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+`;
+
+const Header = styled.div`
   text-align: center;
+  margin-bottom: 20px;
 `;
 
-const Title = styled.h2`
-  font-size: 2rem;
-  color: #343a40;
-  margin-bottom: 1.5rem;
+const AlbumName = styled.h1`
+  font-size: 28px;
+  color: #2c3e50;
 `;
 
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 0.8rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  font-size: 1rem;
+const Divider = styled.hr`
+  height: 1px;
+  background-color: #7f8c8d;
+  border: none;
+  margin: 20px 0;
 `;
 
 const SongList = styled.ul`
-  list-style-type: none;
+  list-style: none;
   padding: 0;
   margin: 0;
 `;
 
 const SongItem = styled.li`
-  background-color: #ffffff;
-  margin: 0.5rem 0;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: left;
+  padding: 15px 0;
+  border-bottom: 1px solid #ecf0f1;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
 `;
 
 const SongTitle = styled.span`
-  font-size: 1.25rem;
+  font-size: 20px;
+  color: #34495e;
   font-weight: bold;
-  color: #007bff;
 `;
 
 const SongDetails = styled.span`
-  font-size: 0.9rem;
-  color: #6c757d;
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-top: 5px;
+`;
+
+const Footer = styled.div`
+  text-align: center;
+  margin-top: 40px;
+  color: #95a5a6;
+  font-size: 14px;
+`;
+
+const LoadingMessage = styled.p`
+  text-align: center;
+  font-size: 18px;
+  color: #2980b9;
+  margin-top: 20px;
+`;
+
+const ErrorMessage = styled.p`
+  text-align: center;
+  font-size: 18px;
+  color: #e74c3c;
+  margin-top: 20px;
 `;
 
 const NoSongsMessage = styled.p`
-  font-size: 1.2rem;
-  color: #6c757d;
-  margin-top: 2rem;
+  text-align: center;
+  font-size: 16px;
+  color: #95a5a6;
+  margin-top: 20px;
 `;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-`;
-
-const PageButton = styled.button<{ active: boolean }>`
-  padding: 0.5rem 1rem;
-  border: 1px solid #007bff;
-  background-color: ${(props) => (props.active ? '#007bff' : '#ffffff')};
-  color: ${(props) => (props.active ? '#ffffff' : '#007bff')};
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #0056b3;
-    color: #ffffff;
-  }
-`;
-
-const AlbumSongs = () => {
+const AlbumSongs: React.FC = () => {
   const { albumName } = useParams<{ albumName: string }>();
   const dispatch: AppDispatch = useDispatch();
-  const musicInAlbum = useSelector((state: RootState) => state.albums.musicIntheAlbum);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const songsPerPage = 5;
+  const { musicIntheAlbum, loading, error } = useSelector((state: RootState) => state.albums);
 
   useEffect(() => {
     if (albumName) {
@@ -110,53 +94,31 @@ const AlbumSongs = () => {
     }
   }, [dispatch, albumName]);
 
-  const filteredSongs = musicInAlbum.filter((song) =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredSongs.length / songsPerPage);
-  const currentSongs = filteredSongs.slice(
-    (currentPage - 1) * songsPerPage,
-    currentPage * songsPerPage
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   return (
-    <Container>
-      <Title>Songs in Album: {albumName}</Title>
-      <SearchInput
-        type="text"
-        placeholder="Search songs by title..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      {currentSongs.length > 0 ? (
+    <PageContainer>
+      <Header>
+        <AlbumName>Songs in "{albumName}"</AlbumName>
+        <Divider />
+      </Header>
+
+      {loading && <LoadingMessage>Loading songs...</LoadingMessage>}
+      {error && <ErrorMessage>Error: {error}</ErrorMessage>}
+      {!loading && musicIntheAlbum.length === 0 && <NoSongsMessage>No songs found for this album.</NoSongsMessage>}
+
+      {musicIntheAlbum.length > 0 && (
         <SongList>
-          {currentSongs.map((song, index) => (
-            <SongItem key={index}>
+          {musicIntheAlbum.map((song) => (
+            <SongItem key={song.title}>
               <SongTitle>{song.title}</SongTitle>
+              <SongDetails>Artist: {song.artist}</SongDetails>
               <SongDetails>Genre: {song.genre}</SongDetails>
             </SongItem>
           ))}
         </SongList>
-      ) : (
-        <NoSongsMessage>No songs match your search.</NoSongsMessage>
       )}
-      <PaginationContainer>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <PageButton
-            key={i + 1}
-            active={currentPage === i + 1}
-            onClick={() => handlePageChange(i + 1)}
-          >
-            {i + 1}
-          </PageButton>
-        ))}
-      </PaginationContainer>
-    </Container>
+
+      <Footer>End of Songs</Footer>
+    </PageContainer>
   );
 };
 

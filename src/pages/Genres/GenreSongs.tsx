@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '../../redux/store';
+import { AppDispatch, RootState } from '../../redux/store';
 import { fetchGenresSongs } from '../../redux/slices/genresSlice';
 import styled from '@emotion/styled';
 
@@ -83,9 +83,8 @@ const PageNumber = styled.span`
 const GenreSongs = () => {
   const { genreName } = useParams<{ genreName: string }>();
   const dispatch: AppDispatch = useDispatch();
-  const musicByGenre = useSelector((state: any) => state.genres.musicByGenre);
-  const isLoading = useSelector((state: any) => state.genres.isLoading);
-  const error = useSelector((state: any) => state.genres.error);
+  const {musicByGenre, loading, error} = useSelector((state: RootState) => state.genres);
+  
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -120,7 +119,7 @@ const GenreSongs = () => {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
 
-      {isLoading ? (
+      {loading ? (
         <p>Loading songs...</p>
       ) : error ? (
         <p>Error loading songs: {error}</p>

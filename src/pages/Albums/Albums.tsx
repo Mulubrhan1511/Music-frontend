@@ -1,187 +1,173 @@
+/** @jsxImportSource @emotion/react */
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../redux/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '../../redux/store';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMusic } from '@fortawesome/free-solid-svg-icons';
 
 const Container = styled.div`
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  font-family: Arial, sans-serif;
 `;
 
-const Header = styled.h1`
+const Title = styled.h1`
   text-align: center;
-  color: #343a40;
+  color: #3b5998;
 `;
 
 const SearchBar = styled.input`
-  display: block;
   width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 1rem;
-`;
-
-const AlbumsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-`;
-
-const AlbumCard = styled.div`
-  padding: 1rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: center;
-`;
-
-const ArtistName = styled.h2`
-  font-size: 1.25rem;
-  color: #007bff;
-  margin-bottom: 0.5rem;
-`;
-
-const AlbumTitle = styled.p`
-  font-size: 1rem;
-  color: #6c757d;
-`;
-
-const PaginationControls = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1.5rem;
-  gap: 1rem;
-`;
-
-const PageButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-
-  &:hover:enabled {
-    background-color: #0056b3;
-  }
-`;
-
-const LogoutButton = styled.button`
-  margin: 2rem auto;
+  max-width: 400px;
+  padding: 10px;
+  margin: 20px auto;
   display: block;
-  padding: 0.75rem 1.5rem;
-  background-color: #ff4d4d;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const AlbumList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+`;
+
+const AlbumItem = styled.li`
+  background-color: #f9f9f9;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 200px;
+`;
+
+const AlbumTitle = styled.h2`
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 5px;
+`;
+
+const ArtistName = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+`;
+
+const ViewButton = styled.button`
+  background-color: #3b5998;
   color: white;
   border: none;
+  padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 1rem;
+  transition: background-color 0.3s;
 
   &:hover {
-    background-color: #ff6666;
+    background-color: #29487d;
   }
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+
+  button {
+    background-color: #3b5998;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    margin: 0 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: #29487d;
+    }
+
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+const LoadingText = styled.p`
+  text-align: center;
+  color: #3b5998;
+  font-weight: bold;
 `;
 
 const Albums: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const albums = useSelector((state: RootState) => state.albums.albums);
+  const { albums, loading, error } = useSelector((state: RootState) => state.albums);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // Number of items per page
   const navigate = useNavigate();
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [albumsPerPage] = useState(6);
-  const [searchTerm, setSearchTerm] = useState('');
-
   useEffect(() => {
-    dispatch({ type: 'albums/fetchAlbums' }); // Ensure this action is implemented
+    dispatch({ type: 'albums/fetchAlbums' });
   }, [dispatch]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    navigate('/login');
-  };
-
-  // Filter albums based on the search term
-  const filteredAlbums = albums.filter((album) =>
-    album?.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    album?.album.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Calculate pagination details
-  const indexOfLastAlbum = currentPage * albumsPerPage;
-  const indexOfFirstAlbum = indexOfLastAlbum - albumsPerPage;
-  const currentAlbums = filteredAlbums.slice(indexOfFirstAlbum, indexOfLastAlbum);
-  const totalPages = Math.ceil(filteredAlbums.length / albumsPerPage);
 
   const handleAlbumClick = (albumName: string) => {
     navigate(`/albums/${albumName}`);
-  }
+  };
+
+  const filteredAlbums = albums.filter((album) =>
+    album.album.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredAlbums.length / itemsPerPage);
+  const currentAlbums = filteredAlbums.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
 
   return (
     <Container>
-      <Header>Albums</Header>
-
+      <Title>Albums</Title>
       <SearchBar
         type="text"
-        placeholder="Search albums or artists..."
+        placeholder="Search albums..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-
-      {currentAlbums.length > 0 ? (
-        <AlbumsGrid>
-          {currentAlbums.map((album, index) => (
-            <AlbumCard 
-            key={index}
-            onClick={() => handleAlbumClick(album?.album)}
-            >
-              <ArtistName>
-                <FontAwesomeIcon icon={faMusic} style={{ marginRight: '8px' }} />
-                {album?.artist}
-              </ArtistName>
-              <AlbumTitle>{album?.album}</AlbumTitle>
-            </AlbumCard>
-          ))}
-        </AlbumsGrid>
-      ) : (
-        <p>No albums found.</p>
-      )}
-
-      <PaginationControls>
-        <PageButton
-          onClick={() => setCurrentPage((prev) => prev - 1)}
+      <AlbumList>
+        {currentAlbums.map((album) => (
+          <AlbumItem key={album.album}>
+            <AlbumTitle>{album.album}</AlbumTitle>
+            <ArtistName>Artist: {album.artist}</ArtistName>
+            <ViewButton onClick={() => handleAlbumClick(album.album)}>
+              View Album
+            </ViewButton>
+          </AlbumItem>
+        ))}
+      </AlbumList>
+      {loading && <LoadingText>Loading...</LoadingText>}
+      {error && <p>Error: {error}</p>}
+      <Pagination>
+        <button
           disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
         >
           Previous
-        </PageButton>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <PageButton
-          onClick={() => setCurrentPage((prev) => prev + 1)}
+        </button>
+        <button
           disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
         >
           Next
-        </PageButton>
-      </PaginationControls>
-
-      <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
+        </button>
+      </Pagination>
     </Container>
   );
 };
